@@ -102,6 +102,13 @@ func main() {
 	}
 	defer tf.Close()
 
+	if directory != "/" {
+		err := tf.addFile(directory, directory)
+		if err != nil {
+			glog.Fatalf("couldn't create root directory: %v", err)
+		}
+	}
+
 	for _, file := range files {
 		parts := strings.SplitN(file, "=", 2)
 		if len(parts) != 2 {
@@ -276,6 +283,10 @@ func (f *tarFile) addTar(toAdd string) error {
 	root := ""
 	if f.directory != "/" {
 		root = f.directory
+		err := f.addFile(root, root)
+		if err != nil {
+			return err
+		}
 	}
 
 	var r io.Reader

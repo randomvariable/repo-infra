@@ -276,6 +276,13 @@ func (f *tarFile) addTar(toAdd string) error {
 	root := ""
 	if f.directory != "/" {
 		root = f.directory
+		header := tar.Header{
+			Name:     root,
+			Typeflag: tar.TypeDir,
+		}
+		if err := f.makeDirs(header); err != nil {
+			return err
+		}
 	}
 
 	var r io.Reader
@@ -317,6 +324,9 @@ func (f *tarFile) addTar(toAdd string) error {
 		header.Name = filepath.Join(root, header.Name)
 		if header.Typeflag == tar.TypeDir && !strings.HasSuffix(header.Name, "/") {
 			header.Name = header.Name + "/"
+		}
+		if err := f.makeDirs(*header); err != nil {
+			return err
 		}
 		err = f.tw.WriteHeader(header)
 		if err != nil {
